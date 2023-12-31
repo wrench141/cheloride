@@ -10,7 +10,7 @@ const adminRoutes = require("./routes/admin");
 const carModel = require("./models/carModel.js");
 const adminAuth = require("./middlewares/adminauth");
 
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 const DB_URI = "mongodb://127.0.0.1:27017/cheloride";
 const app = express();
 
