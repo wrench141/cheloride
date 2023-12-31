@@ -10,8 +10,8 @@ const adminRoutes = require("./routes/admin");
 const carModel = require("./models/carModel.js");
 const adminAuth = require("./middlewares/adminauth");
 
-const PORT = 4000;
-const DB_URI = "mongodb://127.0.0.1:27017/cheloride";
+const PORT = process.env.PORT || 4000;
+const DB_URI = "mongodb+srv://sidhardhchandra141:uXlCffmNCyc0y1zR@cluster0.wu7g6uh.mongodb.net/?retryWrites=true&w=majority";
 const app = express();
 
 //oiQXsUlU6TV4agCR
@@ -38,6 +38,8 @@ app.get("/", async(req, res) => {
       if(cars.length > 0){
         let locations = cars.map((car) => {return car.location})
         res.render("index.ejs", {locations:locations});
+      }else{
+        res.render("index.ejs", {locations: "pm palem"});
       }
     })
   } catch (error) {
@@ -64,7 +66,7 @@ mongoose.connect(DB_URI).then(() => {
     console.log("DB connected")
     app.listen(PORT, () => {
       console.log("server started");
-      console.log("http://localhost:4000/")
+      console.log(`http://localhost:${PORT}/`)
     });
 })
 
