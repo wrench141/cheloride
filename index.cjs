@@ -38,6 +38,8 @@ app.get("/", async(req, res) => {
       if(cars.length > 0){
         let locations = cars.map((car) => {return car.location})
         res.render("index.ejs", {locations:locations});
+      }else{
+        res.render("index.ejs", {locations: "pm palem"});
       }
     })
   } catch (error) {
