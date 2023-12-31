@@ -11,7 +11,7 @@ const carModel = require("./models/carModel.js");
 const adminAuth = require("./middlewares/adminauth");
 
 const PORT = process.env.PORT || 4000;
-const DB_URI = "mongodb://127.0.0.1:27017/cheloride";
+const DB_URI = "mongodb+srv://sidhardhchandra141:uXlCffmNCyc0y1zR@cluster0.wu7g6uh.mongodb.net/?retryWrites=true&w=majority";
 const app = express();
 
 //oiQXsUlU6TV4agCR
