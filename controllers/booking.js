@@ -36,7 +36,8 @@ const confirmBook = async(req, res) => {
         console.log(req.body)
         const newTempBooking = new tempBooking({
           data: req.body.data,
-          carId: req.body.id,
+          carId: req.body.carid,
+          userId: req.body.email
         });
         id = newTempBooking._id;
         await newTempBooking.save().then(() => {
@@ -73,74 +74,116 @@ const getTempData = async(req, res) => {
 const bookCar = async(req, res) => {
     if(req.method == "GET"){
         const id = req._parsedUrl.query.split("=")[1];
-        res.render("confirmBook.ejs", {id});
+        await tempBooking.findById(id).then(async(booking) => {
+          if(booking != null){
+            await carModel.findById(booking.carId).then((car) => {
+              const stDt = new Date(booking.data[1]);
+              const edDt = new Date(booking.data[2]);
+              let Difference_In_Time = edDt.getTime() - stDt.getTime();
+              let diff = Math.round(
+                Difference_In_Time / (1000 * 3600 * 24)
+              );
+              let data = {};
+              data.brand = car.brand;
+              data.location = booking.data[0];
+              data.date = booking.data[1];
+              data.ddate = booking.data[2];
+              data.time = booking.data[3];
+              data.email = booking.userId;
+              data.price = parseInt(car.amount);
+              data.amount = diff * parseInt(car.amount);
+              res.render("confirmBook.ejs", { id, data});
+            });
+          }else{
+              res.render("confirmBook.ejs", { id });
+          }
+        })
     }else if(req.method == "POST"){
         try {
           const body = req.body;
-          await bookingModel
-            .findOne({ carId: body.carId, startDate: body.startDate })
-            .then(async (booking) => {
-              console.log(booking);
-              if (booking == null) {
-                await carModel.findById(body.carId).then((car) => {
-                    console.log(car.carStatus)
-                  if (car.carStatus != true) {
-                    car.carStatus = true;
-                    let diff =
-                      parseInt(body.dropDate.split("-")[2]) -
-                      parseInt(body.startDate.split("-")[2]);
-                    car.save().then(async () => {
-                      const newBooking = new bookingModel({
-                        time: body.time,
-                        userId: body.email,
-                        carId: body.carId,
-                        price: diff * car.amount,
-                        startDate: body.startDate,
-                        dropDate: body.dropDate,
-                      });
-                      await tempBooking.findOneAndDelete({carId: body.carId});
-                      await newBooking.save().then(async() => {
-                        let html = `
-                        <div><b style="display: inline-block;">Booking By:</b> <p>${body.email}</p></div> 
+          await tempBooking.findOne({userId: body.email}).then(async(booking) => {
+            console.log(booking)
+            if(booking !=  null){
+              await carModel.findById(booking.carId).then((car) => {
+                console.log(car);
+                if (car.carStatus != true) {
+                  car.carStatus = true;
+                  const stDt = new Date(booking.data[1]);
+                  const edDt = new Date(booking.data[2]);
+                  let Difference_In_Time = edDt.getTime() - stDt.getTime();
+                  let diff = Math.round(
+                    Difference_In_Time / (1000 * 3600 * 24)
+                  );
+                  car.save().then(async () => {
+                    const newBooking = new bookingModel({
+                      time: booking.data[3],
+                      userId: body.email,
+                      carId: car._id,
+                      price: diff * car.amount,
+                      startDate: booking.data[1],
+                      dropDate: booking.data[2],
+                    });
+                    await tempBooking.findOneAndDelete({ carId: car._id });
+                    await newBooking.save().then(async () => {
+                      let html = `
+                        <div><b style="display: inline-block;">Booking By:</b> <p>${
+                          body.email
+                        }</p></div> 
                         </br>
                         <div>
-                          <b style="display: inline-block;">User phone:</b> <p>${body.phone}</p>
+                          <b style="display: inline-block;">User phone:</b> <p>${
+                            body.phone
+                          }</p>
                         </div> 
                         </br> 
                           <div>
-                            <b style="display: inline-block;">Booking date:</b> <p>${body.startDate}</p> 
+                            <b style="display: inline-block;">Booking date:</b> <p>${
+                              booking.data[1]
+                            }</p> 
                           </div>
                         </br>
                           <div>
-                            <b style="display: inline-block;">Drop date:</b> <p>${body.dropDate}</p>
+                            <b style="display: inline-block;">Drop date:</b> <p>${
+                              booking.data[2]
+                            }</p>
                           </div>
                         </br> 
                           <div>
-                            <b style="display: inline-block;">Booking time:</b> <p>${body.time}</p> 
+                            <b style="display: inline-block;">Booking time:</b> <p>${
+                              booking.data[3]
+                            }</p> 
                           </div>
                         </br> 
                           <div>
-                            <b style="display: inline-block;">Car brand:</b> <p>${car.brand}</p> 
+                            <b style="display: inline-block;">Car brand:</b> <p>${
+                              car.brand
+                            }</p> 
                           </div>
                         </br> 
                           <div>
-                          <b style="display: inline-block;">Total Amount:</b> <p>${diff * car.amount}</p> 
+                          <b style="display: inline-block;">Total Amount:</b> <p>${
+                            diff * car.amount
+                          }</p> 
                           </div>
                           `;
-                        let executiveMail = "sidhardhchandra141@gmail.com"
-                        await mail("New Booking", html, executiveMail).catch();
-                        await mail("Booking placed", `<p> Your booking has been placed. Our executive will be shortly calling you about the payment and other details</p></br><b style="display: inline-block;">Total Amount:</b> <p>${diff * car.amount}</p>`, body.email).catch();
-                        res.status(200).json({ msg: "car booked" });
-                      });
+                      let executiveMail = "sidhardhchandra141@gmail.com";
+                      await mail("New Booking", html, executiveMail).catch();
+                      await mail(
+                        "Booking placed",
+                        `<p> Your booking has been placed. Our executive will be shortly calling you about the payment and other details</p></br><b style="display: inline-block;">Total Amount:</b> <p>${
+                          diff * car.amount
+                        }</p>`,
+                        body.email
+                      ).catch();
+                      res.status(200).json({ msg: "car booked" });
                     });
-                  } else {
-                    res.status(400).json({ msg: "car already booked" });
-                  }
-                });
-              } else {
-                res.status(400).json({ msg: "Car already Booked" });
-              }
-            });
+                  });
+                } else {
+                  res.status(400).json({ msg: "car already booked" });
+                }
+              });
+            }
+          })
         } catch (error) {
           console.log(error);
         }

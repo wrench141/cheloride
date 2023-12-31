@@ -115,7 +115,7 @@
             const data = [];
             subs.forEach((s) => data.push(s.textContent));
             console.log(data, token, id);
-            let d = {data, id}
+            let d = {data, carid: id}
             fetch("/booking/confirmBooking", {
                 method: 'POST',
                 headers: {

@@ -5,7 +5,7 @@ const bookingRouter = require("express").Router();
 
 bookingRouter.get("/book", bookCar);
 bookingRouter.get("/bookings", authMiddleware, getAllBookings);
-bookingRouter.post("/confirmBooking", confirmBook);
+bookingRouter.post("/confirmBooking", authMiddleware, confirmBook);
 bookingRouter.get("/getTempData/:id", authMiddleware, getTempData);
 bookingRouter.post("/book", authMiddleware, bookCar);
 
