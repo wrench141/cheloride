@@ -64,7 +64,7 @@ mongoose.connect(DB_URI).then(() => {
     console.log("DB connected")
     app.listen(PORT, () => {
       console.log("server started");
-      console.log("http://localhost:4000/")
+      console.log(`http://localhost:${PORT}/`)
     });
 })
 
