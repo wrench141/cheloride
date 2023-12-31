@@ -21,10 +21,8 @@
                         <label for="" class="lab">Location</label>
                         <input type="text" name="location" id="location" placeholder="Select location">
                         <div class="menu">
-                            <% if(locations != null || locations.length > 0){ %>
-                                <% locations.forEach(function(loc, i, entries){ %>
-                                    <div class="lelm"><%= loc %></div>
-                                <% }) %>
+                            <% locations.forEach(function(loc, i, entries){ %>
+                                <div class="lelm"><%= loc %></div>
                             <% }) %>
                         </div>
                     </div>
